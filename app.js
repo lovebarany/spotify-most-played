@@ -6,7 +6,7 @@ var axios = require('axios');
 
 var clientId = 'YOURCLIENTID';
 var clientSecret = 'YOURCLIENTSECRET';
-var redirectUri = 'REDIRECTURI';
+var redirectUri = 'http://localhost:8888/callback';
 var port = 8888;
 
 /**
@@ -86,7 +86,7 @@ app.get('/callback', function (req, res) {
                 res.redirect('/#' + queryString.stringify({
                     access_token: accessToken
                 }));
-                axios.get('https://api.spotify.com/v1/me/top/tracks?time_range=long_term', config)
+                axios.get('https://api.spotify.com/v1/me/top/tracks', config)
                     .then(function(response) {
                         console.log(response.data);
                     })
