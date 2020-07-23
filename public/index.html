@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Get your most played songs on spotify!</title>
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+        <style type="text/css">
+            #login, #loggedin {
+                display: none
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <div id="login">
+                <h1>To see your top songs, please log in!</h1>
+                <a href="/login" class="btn btn-success">Log in with spotify</a>
+            </div>
+            <div id="loggedin">
+                <h2>Your top songs:</h2>
+                <div id="topsongs"></div>
+                <div id="timescope"></div>
+            </div>
+        </div>
+    </body>
+
+    <script id="topsongs-template" type="text/x-handlebars-template">
+        <div class="list-group">
+            {{#each songs}}
+                <div class="media">
+                    <div class="media-left">
+                        <a href="#">
+                            <img class="media-object" src={{getImageUrl}}>
+                        </a>
+                    </div>
+                </div>
+                <div class="media-body">
+                    <a href={{this.uri}} class='list-group-item'>
+                        <h4 class="list-group-item-heading">{{printArtistSong}}</h4>
+                        <p class="list-group-item-text">{{this.album.name}}</p>
+                    </a>
+                </div>
+            {{/each}}
+        </div>
+    </script>
+
+    <script id="timescope-template" type="text/x-handlebars-template">
+        <p>TODO!</p>
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.6/handlebars.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+
+    <script>
+        (function () {
+            /**
+             * Obtains parameters from the hash of the URL
+            * @return Object
+            */
+            function getHashParams() {
+                var hashParams = {};
+                var e, r = /([^&;=]+)=?([^&;]*)/g,
+                q = window.location.hash.substring(1);
+                while ( e = r.exec(q)) {
+                    hashParams[e[1]] = decodeURIComponent(e[2]);
+                }
+                return hashParams;
+            }
+
+            Handlebars.registerHelper('printArtistSong', function() {
+                return this.artists.map(a => a.name) + ' - ' + this.name;
+            });
+
+            Handlebars.registerHelper('getImageUrl', function() {
+                return this.album.images[1].url;
+            });
+
+            var topsongsSource = document.getElementById("topsongs-template").innerHTML,
+                topsongsTemplate = Handlebars.compile(topsongsSource),
+                topsongsPlaceholder = document.getElementById("topsongs");
+
+            var timescopeSource = document.getElementById("timescope-template").innerHTML,
+                timescopeTemplate = Handlebars.compile(timescopeSource),
+                timescopePlaceholder = document.getElementById("timescope");
+            
+            var params = getHashParams();
+
+            var access_token = params.access_token,
+                error = params.error;
+            
+            if (error) {
+                console.log("An error occured:");
+                console.log(error);
+                alert("An error occured! Please try again.");
+            } else {
+                if (access_token) {
+                    $.ajax({
+                        url: 'https://api.spotify.com/v1/me/top/tracks?time_range=short_term',
+                        headers: {
+                            'Authorization': 'Bearer ' + access_token
+                        },
+                        success: function(res) {
+                            topsongsPlaceholder.innerHTML = topsongsTemplate({
+                                songs: res.items
+                            });
+
+                            $('#login').hide();
+                            $('#loggedin').show();
+                        }
+                    });
+                } else {
+                    $('#login').show();
+                    $('#loggedin').hide();
+                }
+            }
+        })();
+    </script>
+</html>
