@@ -1,4 +1,4 @@
-# spotify-api-test-app
+# spotify-most-played
 Simple app to get your most played songs on Spotify.
 
 # Usage
